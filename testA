@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul 28 22:28:29 2020
+
+@author: lmq
+"""
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import re
+def get_soup(url):
+    
+    # 请求URL
+    
+    # 得到页面的内容
+    headers ={'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2950.5 Safari/537.36'}
+    html=requests.get(url,headers=headers,timeout=10)
+    content = html.text
+    # 通过content创建BeautifulSoup对象
+    soup = BeautifulSoup(content, 'html.parser', from_encoding='utf-8')
+    # #输出第一个 title 标签
+    # print(soup.title)
+    # #输出第一个 title 标签的标签名称
+    # print(soup.title.name)
+    # #输出第一个 title 标签的包含内容
+    # print(soup.title.string)
+    return soup
+# 找到完整的投诉信息框
+#分析页面投诉
+def analysis(soup):
+    temp = soup.find('div',class_="search-result-list")
+    #print(temp)
+    df = pd.DataFrame(columns = ['car_name', 'lprice', 'hprice','pic_url'])
+    item_list = temp.find_all('div',class_='search-result-list-item')
+    #print(item_list)
+    
+    for item in item_list:
+        temp = {}
+        #名称标签查找
+        name_list = item.find("p",class_="cx-name text-hover")
+        #print(name_list)
+        #价格标签查找
+        price_list = item.find("p",class_="cx-price")
+        #网址图片查找
+        url_list = item.find("img",class_="img")
+        url_list1 = str(url_list)[28:98]
+        #print(type(url_list))
+        #print(str(url_list)[28:98])
+        #利用正则表达式，对价格进行高低分割
+       
+        price= [float(s) for s in  re.findall(r"[+]?\d*\.\d+|\d+", price_list.text)]
+        print(type(price))
+        print(len(price))
+        #过滤无价格的车或者没有高低价的
+        if len(price)>1:
+            car_name,lprice,hprice,pic_url = name_list.text,price[0],price[1],url_list1
+            #print(type(price_list.text))
+            temp['car_name'], temp['lprice'], temp['hprice'], temp['pic_url'] = car_name,lprice,hprice,pic_url 
+            df = df.append(temp,ignore_index = True)
+       
+    return df
+
+
+#提取多页
+page_num = 3
+result = pd.DataFrame(columns = ['car_name', 'lprice', 'hprice','pic_url'])
+for i in range(page_num):
+    baseurl = 'http://car.bitauto.com/xuanchegongju/?mid=8&page='
+    url = baseurl + str(i+1)
+    print(url)
+    soup = get_soup(url)
+    df = analysis(soup) 
+    result= result.append(df)
+    #保存结果为csv文件
+result.to_csv("vw.csv")
+
+
+
