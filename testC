@@ -10,7 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 #数据加载
-data = pd.read_csv("C:/Users/Administrator/Desktop/github代码/数据分析训练营-结营考试/数据分析训练营-结营考试/ProjectC/CarPrice_Assignment.csv")
+data = pd.read_csv("./CarPrice_Assignment.csv")
 #print(data.info(),data.head())
 train_x = data[["symboling","fueltype","aspiration", "doornumber","carbody","drivewheel","enginelocation","wheelbase","carlength","carwidth","carheight","curbweight","enginetype","cylindernumber","enginesize","fuelsystem","boreratio","stroke","compressionratio","horsepower","peakrpm","citympg","highwaympg","price"]]
 
